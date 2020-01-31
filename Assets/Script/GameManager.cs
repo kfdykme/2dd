@@ -49,6 +49,18 @@ public class GameManager : MonoBehaviour
         return allNext;
     }
 
+    public bool hasUnit(float x, float y) {
+        return hasUnit((int )x, (int) y);
+    }
+
+    public bool hasUnit(int x, int y) {
+       return getByXY(x,y).gameItemName.Equals(GameItem.TYPE_UNIT);
+    }
+
+    public GameItem getByXY(float x, float y) {
+        return getByXY((int)x, (int) y);
+    }
+
     public GameItem getByXY(int x, int y) {
         GameItem target = null;
         target = boardScript.getByXY(x,y);
@@ -58,6 +70,14 @@ public class GameManager : MonoBehaviour
             }
         });
         return target;
+    }
+
+    public int getMovementCost(float x, float y) {
+        return getMovementCost((int) x, (int) y);
+    }
+
+    public int getMovementCost(int x, int y) {
+        return getByXY(x,y).moveCoast;
     }
 
     public void nextTurn()
@@ -111,19 +131,25 @@ public class GameManager : MonoBehaviour
         return boardScript.getBlueLightActive(end);
     }
 
-    public void callUnitMove(GameItem item, bool status)
+    public List<BoardManager.Light> callUnitMove(GameItem item, bool status)
     {
         isMoveing = status;
         Rigidbody2D rg2D = item.GetComponent<Rigidbody2D>();
-        List<BoardManager.Light> lights = boardScript.getLightsCanGo(rg2D, item.movement);
+        List<BoardManager.Light> lights = boardScript.getLightsCanGo(rg2D, item.movement, new List<BoardManager.Light>());
+        List<BoardManager.Light> results = new List<BoardManager.Light>();
         if (!status)
         {
             lights = boardScript.lights;
-        }
+        } 
         lights.ForEach(light =>
-        {
-            light.Object.SetActive(status);
-        });
+        { 
+            if (!hasUnit(light.position.x, light.position.y)) {
+
+                light.Object.SetActive(status);
+                results.Add(light);
+            }
+        }); 
+        return results;
     }
 
 }

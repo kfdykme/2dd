@@ -45,17 +45,36 @@ namespace Completed
 
         public List<GameItem> floors = new List<GameItem>();
         
-        public List<Light> getLightsCanGo(Rigidbody2D source, int movement) {
+
+        private List<Light> getLightsNextTo(Light light) {
+            List<Light> ls = new List<Light>();
+            lights.ForEach(i => {
+                if ((i.position - light.position).sqrMagnitude < 1.5
+                && i.position != light.position)
+                    ls.Add(i);
+            });
+            return ls;
+        }
+
+        private int getMovementCoast(int x, int y) {
+            return GameManager.instance.getMovementCost(x,y);
+        }
+
+        public List<Light> getLightsCanGo(Rigidbody2D source, int movement, List<Light> result) {
 
             List<Light> tlights = new List<Light>();
-            if (movement == 0) return tlights;
-
-            for (int i = 0 ; i < lights.Count; i++) {
-                if ((lights[i].position - source.position).sqrMagnitude < 1.5) {
-                    tlights.Add(lights[i]);
-                    tlights.AddRange(getLightsCanGo(lights[i].Object.GetComponent<Rigidbody2D>(), movement -1));
-                }
+            Light s = getLightByXY((int)source.position.x,(int) source.position.y);
+            if (result.Find(p => {return p.position == s.position;}) == null) {
+             tlights.Add(s);
             }
+            if (movement > 0)
+                getLightsNextTo(s).ForEach(l => {
+                    getLightsCanGo(l.Object.GetComponent<Rigidbody2D>(), movement- getMovementCoast((int)l.position.x, (int)l.position.y), tlights)
+                    .ForEach( nl => {
+                        if (tlights.FindIndex(p => p.position == nl.position) == -1) 
+                            tlights.Add(nl);
+                        });
+                }); 
             return tlights;
         }
 
@@ -70,8 +89,14 @@ namespace Completed
         }
 
         // todo
-        public GameItem getLightByXY(int x, int y) {
-            return null;
+        public Light getLightByXY(int x, int y) {
+            Light target = null;
+            lights.ForEach(i => {
+                if (i != null && i.position.x == x && i.position.y == y) {
+                    target = i;
+                }
+            });
+            return target;
         }
 
         public bool getBlueLightActive(Vector2 end) {

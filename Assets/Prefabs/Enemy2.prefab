@@ -185,5 +185,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameItemName: unit
   isWaitToMove: 0
+  isWaitNext: 0
   movement: 3
+  moveCoast: 2
   moveTime: 0.1
+  x: 2
+  y: 3
