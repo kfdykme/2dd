@@ -3,7 +3,7 @@ using System.Collections;
 
 using System.Collections.Generic;        //Allows us to use Lists. 
 using Completed;
-
+using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
 
@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
 
     private int currentTurn = 1;
 
+    public RoundAnimationManager roundAnimationManager;
 
     public MenuBar menuBar;
 
@@ -87,7 +88,8 @@ public class GameManager : MonoBehaviour
         {
             unit.isWaitNext = false;
         });
-        print("GameManager: next turn - " + currentTurn);
+        print("GameManager: next turn - " + currentTurn); 
+        roundAnimationManager.play(currentTurn);
     }
 
     void Awake()
