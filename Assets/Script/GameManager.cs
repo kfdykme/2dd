@@ -21,11 +21,12 @@ public class GameManager : MonoBehaviour
     private int level = 3;
     private List<GameItem> playerUnits;
 
-    private int currentTurn = 1;
+    private int currentTurn = 0;
 
     public RoundAnimationManager roundAnimationManager;
 
     public MenuBar menuBar;
+
 
     public void notifyMenu(bool status, GameItem focus)
     {
@@ -114,6 +115,7 @@ public class GameManager : MonoBehaviour
     {
         playerUnits.Clear();
         boardScript.SetupScene(level);
+        nextTurn();
     }
 
     public void GameOver()
@@ -130,7 +132,7 @@ public class GameManager : MonoBehaviour
     {
 
         Vector2 end = start + new Vector2(xDir, yDir);
-        return boardScript.getBlueLightActive(end);
+        return boardScript.getBlueLightActive(end) || hasUnit(end.x,end.y);
     }
 
     public List<BoardManager.Light> callUnitMove(GameItem item, bool status)

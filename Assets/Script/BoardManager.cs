@@ -57,7 +57,7 @@ namespace Completed
         }
 
         private int getMovementCoast(int x, int y) {
-            return GameManager.instance.getMovementCost(x,y);
+            return GameManager.instance.getByXY(x,y).moveCoast;
         }
 
         public List<Light> getLightsCanGo(Rigidbody2D source, int movement, List<Light> result) {
@@ -67,13 +67,17 @@ namespace Completed
             if (result.Find(p => {return p.position == s.position;}) == null) {
              tlights.Add(s);
             }
-            if (movement > 0)
+            if (movement > -1)
                 getLightsNextTo(s).ForEach(l => {
-                    getLightsCanGo(l.Object.GetComponent<Rigidbody2D>(), movement- getMovementCoast((int)l.position.x, (int)l.position.y), tlights)
-                    .ForEach( nl => {
-                        if (tlights.FindIndex(p => p.position == nl.position) == -1) 
-                            tlights.Add(nl);
-                        });
+                    if (!GameManager.instance.hasUnit(l.position.x, l.position.y)
+                    && movement- GameManager.instance.getMovementCost(l.position.x, l.position.y)>-1) {
+
+                        getLightsCanGo(l.Object.GetComponent<Rigidbody2D>(), movement- getMovementCoast((int)l.position.x, (int)l.position.y), tlights)
+                        .ForEach( nl => {
+                            if (tlights.FindIndex(p => p.position == nl.position) == -1) 
+                                tlights.Add(nl);
+                            });
+                    }
                 }); 
             return tlights;
         }

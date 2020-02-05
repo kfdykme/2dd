@@ -83,6 +83,9 @@ return nullButtonCodes.IndexOf(buttonCode) != -1;
     }
 
     public bool OrderMove(Vector2 end) {
+        if (GameManager.instance.hasUnit(end.x, end.y)){
+            return false;
+        }
         Vector3 end3 = new Vector3(end.x, end.y, 0);
 
         List<List<Vector2>> lists = pathTo(transform.position,end, movement);

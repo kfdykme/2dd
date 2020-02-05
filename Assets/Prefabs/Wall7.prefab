@@ -114,9 +114,10 @@ MonoBehaviour:
   isWaitToMove: 0
   isWaitNext: 0
   movement: 3
+  moveCoast: 999
   moveTime: 0.1
-  x: -1
-  y: -1
+  x: 5
+  y: 3
 --- !u!50 &-4369240315016173294
 Rigidbody2D:
   serializedVersion: 4

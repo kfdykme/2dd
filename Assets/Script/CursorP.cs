@@ -64,9 +64,8 @@ public class CursorP : MovingObject
         int vertical = 0;      
            
         switch(code) {
-            case KeyCode.A:
-                 onA();
-                return true;
+            case KeyCode.A: 
+                return onA();
             case KeyCode.B:
                  onB();
                 return true;
@@ -121,6 +120,12 @@ public class CursorP : MovingObject
         bool result = moveItem.callUnitMove(true);
     }
 
+    public void callUnitWait() {
+        moveItem = getFocus();
+        moveItem.isWaitNext = true;
+        GameManager.instance.checkNextTurn();
+    }
+
     private bool shouldShowMenu() {
         return !GameManager.instance.isMenuing && !checkMoveItem();
     }
@@ -129,18 +134,24 @@ public class CursorP : MovingObject
         return moveItem != null && moveItem.isWaitToMove ;
     }
     
-    private void moveUnit() {
+    private bool moveUnit() {
        
-        moveItem.OrderMove(rg2d.position); 
+        if (!moveItem.OrderMove(rg2d.position)){
+            return false;
+        }
         moveItem = null;
+        return true;
     }
-    private void onA () {
+    private bool onA () {
         
         if (checkMoveItem()) {
-            moveUnit();
+            return moveUnit();
         } else if (shouldShowMenu()) {
             GameManager.instance.notifyMenu(true, getFocus());
+            return true;
         } 
+
+        return false;
     }
 
     private void onB () {

@@ -26,9 +26,11 @@ public class MenuBar : EventableBehaviour
             return false;
         } else {
             if (code == KeyCode.DownArrow) {
-                OnHoverButton(++mCurrentPos % buttons.Length);
+                mCurrentPos = (mCurrentPos+1) % buttons.Length;
+                OnHoverButton(mCurrentPos);
             } else if (code == KeyCode.UpArrow) {
-                OnHoverButton(--mCurrentPos % buttons.Length);
+                mCurrentPos = (mCurrentPos-1) % buttons.Length;
+                OnHoverButton(mCurrentPos);
             } else if (code == KeyCode.A) {
                 mButtons[mCurrentPos].GetComponent<MenuButton>().onClick();
                 notifyMenuFalse();
@@ -42,6 +44,7 @@ public class MenuBar : EventableBehaviour
         GameManager.instance.notifyMenu(false, null);
     }
     public void notifyMenu(bool status, Vector2 source, GameItem focus) {
+        mCurrentPos = 0;
         print("MenuBar: On notifyMenu");
         Vector2 end = source + new Vector2(1,1); 
         GetComponent<RectTransform>().anchoredPosition = end;
@@ -62,13 +65,16 @@ public class MenuBar : EventableBehaviour
 
     void OnHoverButton(int pos) {
         //1 reset current hovered button
-        if (hoverButton == null) {hoverButton = mButtons[0];}
+        hoverButton = mButtons[pos];
+        if (hoverButton == null) {hoverButton = mButtons[0]; return;}
+         
         Image hoverButtonImage = hoverButton.GetComponent<Image>();
         hoverButtonImage.color = Color.white;
 
-        hoverButton = mButtons[pos];
         hoverButtonImage = hoverButton.GetComponent<Image>();
-        hoverButtonImage.color = Color.black;
+        Color outColor; 
+        ColorUtility.TryParseHtmlString("#00bcd4", out  outColor);
+        hoverButtonImage.color = outColor;
     }
 
     private List<MenuButton> getUsefulMenuButton(GameItem focus){
@@ -109,7 +115,7 @@ public class MenuBar : EventableBehaviour
                  new Vector3(0,0, 0f),
                  Quaternion.identity);
                 instance.transform.SetParent(menuHolder); 
-                instance.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0 -x * 20);
+                instance.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0 -x * 25);
                 mButtons.Add(instance);
             }
             OnHoverButton(mCurrentPos);

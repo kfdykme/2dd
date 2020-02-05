@@ -15,6 +15,8 @@ public class MenuButton : MonoBehaviour
     public void  onClick() {
         if (buttonCode == CODE_MOVE) {
             CursorP.instance.callUnitMove();
+        } else if (buttonCode == CODE_WAIT) {
+            CursorP.instance.callUnitWait();
         } else if (buttonCode == CODE_NEXT_TURN) {
             GameManager.instance.nextTurn();
         }
