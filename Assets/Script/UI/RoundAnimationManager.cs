@@ -17,6 +17,11 @@ public class RoundAnimationManager : MonoBehaviour
     public int time3 = 0;
     public Text currentTurnText;
 
+    public void playTeam(int turn, Team team) {
+        roundText.color = team.mTeamColor;
+        play(turn);
+    }
+
     public void play(int turn) {
         roundText.text = "Round " + turn;
         currentTurnText.text = "Round: " + turn;

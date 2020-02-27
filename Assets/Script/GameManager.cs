@@ -20,6 +20,9 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public bool isMoveing = false;
     private int level = 3;
     private List<GameItem> playerUnits;
+    public List<Team> mTeams;
+
+    private int mCurrentTeamPos = -1;
 
     private int currentTurn = 0;
 
@@ -27,17 +30,48 @@ public class GameManager : MonoBehaviour
 
     public MenuBar menuBar;
 
+    public void UnitDie(GameItem gameItem) {
+        GameItem.checkIsUnit(gameItem);
+
+        gameItem.Dead();
+    }
+
+    public bool GetCanAttack(float x, float y) {
+        BoardManager.Light light = boardScript.getLightByXY((int) x, (int)y);
+        // print(x + "/" + y + ":" + light.status + ":" + light.statusCode);
+        return light.statusCode.Equals(BoardManager.Light.STATUS_RED);
+    }
+
+    public bool NowTeamInclude (GameItem item) {
+        bool isInclude = false;
+        if (item == null) return isInclude;
+        mTeams[mCurrentTeamPos].teamUnits.ForEach(unit => {
+            if (unit.Equals(item))
+                isInclude = true;
+        });
+        print("check in include:" + item.id + ", result:" + isInclude);
+        return isInclude;
+    }
+
+    public void NotifyMoveEndMenu(GameItem gameItem) {
+        menuBar.notifyMenu(true, new Vector2(0, 0), gameItem);
+        isMenuing = true;
+    }
 
     public void notifyMenu(bool status, GameItem focus)
     {
-        menuBar.notifyMenu(status, new Vector2(0, 0), focus);
+        if (!NowTeamInclude(focus)) {
+            menuBar.notifyMenu(status, new Vector2(0, 0), null);
+        } else {
+            menuBar.notifyMenu(status, new Vector2(0, 0), focus);
+        }
         isMenuing = status;
     }
 
     public bool checkNextTurn()
     {
         bool allNext = true;
-        playerUnits.ForEach(unit =>
+        mTeams[mCurrentTeamPos].teamUnits.ForEach(unit =>
         {
             if (unit.isWaitNext == false)
             {
@@ -49,6 +83,22 @@ public class GameManager : MonoBehaviour
             nextTurn();
         }
         return allNext;
+    }
+
+    public GameItem GetOtherTeamUnitByXY(float x, float y) {
+        return GetOtherTeamUnitByXY((int) x, (int) y);
+    }
+
+    public GameItem GetOtherTeamUnitByXY(int x, int y) { 
+        print("GetOtherTeamUnitByXY");
+        GameItem unit = getByXY(x,y);
+        if (unit != null && unit.gameItemName.Equals(GameItem.TYPE_UNIT)) {
+            
+            if (!NowTeamInclude(unit)) {
+                return unit;
+            }
+        } 
+        return null;
     }
 
     public bool hasUnit(float x, float y) {
@@ -67,10 +117,15 @@ public class GameManager : MonoBehaviour
         GameItem target = null;
         target = boardScript.getByXY(x,y);
         playerUnits.ForEach(i => {
-            if (i.x ==x && i.y ==y) {
+            if (i.x ==x && i.y ==y
+                && !i.isDead) {
                 target = i;
             }
         });
+        if (target == null) {
+            throw new System.Exception("GameManager get a null gameitem from (" + x +"," + y +");");
+        } 
+ 
         return target;
     }
 
@@ -84,13 +139,28 @@ public class GameManager : MonoBehaviour
 
     public void nextTurn()
     {
-        currentTurn++;
-        playerUnits.ForEach(unit =>
-        {
-            unit.isWaitNext = false;
+        mCurrentTeamPos = (mCurrentTeamPos + 1) % mTeams.Count;
+        
+        mTeams.ForEach(team => {
+            team.teamUnits.ForEach(unit =>
+            {
+                unit.isWaitNext = false;
+            });
         });
+
+        playerUnits.ForEach(unit => {
+             unit.isWaitNext = false;
+        });
+        if (mCurrentTeamPos == 0) {
+
+            currentTurn++;
+        }
+        roundAnimationManager.playTeam(currentTurn,mTeams[mCurrentTeamPos]);
         print("GameManager: next turn - " + currentTurn); 
-        roundAnimationManager.play(currentTurn);
+    }
+
+    public void AddUnitTeam(Team team) {
+        mTeams.Add(team);
     }
 
     void Awake()
@@ -105,7 +175,7 @@ public class GameManager : MonoBehaviour
         }
 
         DontDestroyOnLoad(gameObject);
-        playerUnits = new List<GameItem>();
+        playerUnits = new List<GameItem>(); 
         boardScript = GetComponent<BoardManager>();
         eventSystemScript = GetComponent<EventSystem>();
         InitGame();
@@ -113,9 +183,23 @@ public class GameManager : MonoBehaviour
 
     void InitGame()
     {
-        playerUnits.Clear();
+        initTeam();
+        playerUnits.Clear(); 
         boardScript.SetupScene(level);
+        
         nextTurn();
+    }
+
+    private void initTeam() {
+        print("init team start");
+        
+        mTeams.ForEach(team => {
+            print(team.teamName);
+            team.teamUnits.ForEach(unit => {
+                print(unit.gameObject.tag);
+            });
+        });
+        print("init team end");
     }
 
     public void GameOver()
@@ -145,15 +229,51 @@ public class GameManager : MonoBehaviour
         {
             lights = boardScript.lights;
         } 
+
+        List<BoardManager.Light> others = new List<BoardManager.Light>();
         lights.ForEach(light =>
         { 
             if (!hasUnit(light.position.x, light.position.y)) {
 
-                light.Object.SetActive(status);
+                light.notify(status);
                 results.Add(light);
+            }  
+
+            if (status) { 
+                getOtherTeamUnitNextTo(light).ForEach(i => {
+                    if (others.Find(p => {
+                        return p.Equals(i);
+                    }) == null) 
+                        others.Add(i);
+                });  
+            } else {
+                
+                light.notify(status,BoardManager.Light.STATUS_BLUE);
             }
         }); 
+
+        
+        others.ForEach(l => {
+            l.notify(status,BoardManager.Light.STATUS_RED);
+            // l.Object.GetComponent<SpriteRenderer>().color = Color.black;
+        });
         return results;
     }
+
+    
+        public List<BoardManager.Light> getOtherTeamUnitNextTo(BoardManager.Light light) {
+            List<BoardManager.Light> ls = new List<BoardManager.Light>();
+            boardScript.getLightsNextTo(light).ForEach(i => {
+                if ((i.position - light.position).sqrMagnitude < 1.5
+                    && i.position != light.position 
+                    ) {
+                        
+                GameItem unit = GetOtherTeamUnitByXY(i.position.x, i.position.y);
+                        if (unit != null && !unit.isDead) 
+                        ls.Add(i);
+                        }
+            });
+            return ls;
+        }
 
 }

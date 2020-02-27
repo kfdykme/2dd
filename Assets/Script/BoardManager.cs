@@ -24,6 +24,61 @@ namespace Completed
         public class Light {
             public GameObject Object;
             public Vector2 position;
+
+            public const int STATUS_BLUE = 1;
+            public const int STATUS_RED = 2;
+
+            public Color color;
+            
+            public bool  status;
+
+            public int statusCode  = -1;
+
+            private  Color COLOR_BLUE =   new Color(0f/255f, 100f/255f, 211f/255f, .5f);
+
+            private  Color COLOR_RED =  new Color(255f/255f, 100f/255f, 0f/255f, .5f);
+
+            public void notify(bool status) {
+                status = status;
+                Object.SetActive(status);
+                
+                if (statusCode == -1) {
+                    
+                    Object.GetComponent<SpriteRenderer>().color = COLOR_BLUE;
+                }
+            }
+
+            public void notify(bool status, int code) {
+                notify(status);
+                statusCode = code;
+                switch(code) {
+                    case STATUS_BLUE:
+                        Object.GetComponent<SpriteRenderer>().color = COLOR_BLUE;
+                        break;
+                    case STATUS_RED:
+                        Object.GetComponent<SpriteRenderer>().color = COLOR_RED;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            // override object.Equals
+            public override bool Equals(object obj)
+            { 
+                
+                if (obj == null || GetType() != obj.GetType())
+                {
+                    return false;
+                }
+                Vector2 pos = ((Light)obj).position; 
+                return pos.x == position.x && pos.y == position.y;
+            }
+            
+            // override object.GetHashCode
+            public override int GetHashCode()
+            {   
+                return base.GetHashCode();
+            }
         }
 
         public int columns = 8;
@@ -33,20 +88,21 @@ namespace Completed
         public GameObject exit;
         public GameObject[] floorTiles;
         public GameObject[] wallTiles;
-        public GameObject[] foodTiles;
-        public GameObject[] enemyTiles;
+        public GameObject[] foodTiles; 
         public GameObject[] outerWallTiles;
         public GameObject lightRedTiles;
         public GameObject lightBlueTiles;
 
         private Transform boardHolder;
+
+        private Transform lightHolder;
         private List<Vector3> gridPosition = new List<Vector3>();
         public List<Light> lights = new List<Light>();
 
         public List<GameItem> floors = new List<GameItem>();
         
 
-        private List<Light> getLightsNextTo(Light light) {
+        public List<Light> getLightsNextTo(Light light) {
             List<Light> ls = new List<Light>();
             lights.ForEach(i => {
                 if ((i.position - light.position).sqrMagnitude < 1.5
@@ -67,7 +123,8 @@ namespace Completed
             if (result.Find(p => {return p.position == s.position;}) == null) {
              tlights.Add(s);
             }
-            if (movement > -1)
+            if (movement > -1) {
+
                 getLightsNextTo(s).ForEach(l => {
                     if (!GameManager.instance.hasUnit(l.position.x, l.position.y)
                     && movement- GameManager.instance.getMovementCost(l.position.x, l.position.y)>-1) {
@@ -79,16 +136,21 @@ namespace Completed
                             });
                     }
                 }); 
+            }  
             return tlights;
         }
+
 
         public GameItem getByXY(int x, int y) {
             GameItem target = null;
             floors.ForEach(floor => {
-                if (floor != null && floor.x == x && floor.y == y) {
+                if (floor != null  
+                && floor.x == x && floor.y == y) {
                     target = floor;
                 }
             });
+
+            if (target.isDead) return null;
             return target;
         }
 
@@ -128,6 +190,8 @@ namespace Completed
         void BoardSetup()
         {
             boardHolder = new GameObject("Board").transform;
+            lightHolder = new GameObject("LightHolder").transform;
+
             floors.Clear();
             for (int x = -1; x < columns + 1; x++)
             {
@@ -148,7 +212,7 @@ namespace Completed
                     }
                     floors.Add(g);
                     instance.transform.SetParent(boardHolder);
-                    // add lights
+                    // add blue  lights
                     toInstantiate = lightBlueTiles;
                     instance = Instantiate(toInstantiate, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
                     g = instance.GetComponent<GameItem>();
@@ -157,7 +221,7 @@ namespace Completed
                     g.x = x;
                     g.y = y;
                     } 
-                    instance.transform.SetParent(boardHolder);
+                    instance.transform.SetParent(lightHolder);
                     Light light = new Light();
                     light.Object = instance;
                     light.position = new Vector2(x, y);
@@ -193,6 +257,16 @@ namespace Completed
             }
         }
 
+        void layoutObjectAtTeam(Team team) {
+            Transform teamHolder = new GameObject(team.teamName).transform;
+            team.teamUnits.ForEach(i => {
+                Vector3 position = new Vector3(i.x, i.y, 0f);
+                GameObject instance = Instantiate(i.gameObject, position, Quaternion.identity);
+                instance.GetComponent<GameItem>().teamColor = team.mTeamColor;
+                instance.transform.SetParent(teamHolder);
+            });
+        }
+
         public void SetupScene(int level)
         {
             BoardSetup();
@@ -200,7 +274,10 @@ namespace Completed
             layoutObjectAtRandom(wallTiles, wallCount.minimum, wallCount.maximum);
             layoutObjectAtRandom(foodTiles, foodCount.minimum, foodCount.maximum);
             int enemyCount = level;
-            layoutObjectAtRandom(enemyTiles, enemyCount, enemyCount);
+            GameManager.instance.mTeams.ForEach(team => {
+
+                layoutObjectAtTeam(team);
+            });
             Instantiate(exit, new Vector3(columns - 1, rows - 1, 0f), Quaternion.identity);
         }
 

@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
+using System;
 public class GameItem : MonoBehaviour
 {
     public string gameItemName = NAME_UNSET;
@@ -18,6 +19,8 @@ public class GameItem : MonoBehaviour
 
     public bool isWaitNext = false;
 
+    public bool isDead = false;
+
     public int movement = 3;
 
     public int moveCoast = 1;
@@ -31,10 +34,76 @@ public class GameItem : MonoBehaviour
 
     public int y  = -1;
 
+    public string id = "";
+
     private List<int> unitButtonCodes = new List<int>();
     public static List<int> nullButtonCodes = new List<int>();
     
     public List<Completed.BoardManager.Light> lightsCanGo = new List<Completed.BoardManager.Light>();
+
+    private UnitFlag unitFlag;
+
+    public Color teamColor;
+
+    public int HP;
+
+    public int currentHP;
+
+    public int attack;
+
+    public int mona;
+
+    public int defance;
+
+    public int monadef;
+
+    public int c;
+
+    public int d;
+ 
+    public class GameItemException : System.Exception
+    {
+        public GameItemException() { }
+        public GameItemException(string message) : base(message) { }
+        public GameItemException(string message, System.Exception inner) : base(message, inner) { }
+        protected GameItemException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }  
+
+
+    public void Dead() {
+        
+        gameObject.SetActive(false);
+        isDead = true;
+    }
+
+
+    public static void checkIsUnit(GameItem item) {
+        if (!item.gameItemName.Equals(TYPE_UNIT))
+            throw new GameItemException("This is not an unit:" + item.GetType());
+    }
+
+    // override object.Equals
+    public override bool Equals(object obj)
+    { 
+        
+        if (obj == null || GetType() != obj.GetType())
+        {
+            return false;
+        }
+         
+        return ((GameItem) obj).id.Equals(id);
+    }
+    
+    // override object.GetHashCode
+    public override int GetHashCode()
+    {
+        // TODO: write your implementation of GetHashCode() here
+        throw new System.NotImplementedException();
+        return base.GetHashCode();
+    }
+
     void Start()
     {
         rb2D = GetComponent<Rigidbody2D>();
@@ -45,6 +114,14 @@ public class GameItem : MonoBehaviour
         unitButtonCodes.Add(MenuButton.CODE_WAIT);
 
         nullButtonCodes.Add(MenuButton.CODE_NEXT_TURN); 
+
+        if (gameItemName.Equals(TYPE_UNIT)) {
+            InitUnit();
+        }
+    }
+
+    public void InitUnit(){
+        unitFlag = GetComponent<Transform>().GetChild(0).GetComponent<UnitFlag>();
     }
 
     /// <summary>
@@ -54,6 +131,15 @@ public class GameItem : MonoBehaviour
     {
         x = (int)transform.position.x;
         y = (int)transform.position.y;
+        
+        if (gameItemName.Equals(TYPE_UNIT)) {
+            UpdateUnit();
+        }
+    }
+
+    private void UpdateUnit() { 
+        unitFlag.transform.position =   new Vector2(unitFlag.xOffset + x, unitFlag.yOffset + y); 
+        unitFlag.GetComponent<SpriteRenderer>().color = teamColor;
     }
  
 
@@ -91,9 +177,27 @@ return nullButtonCodes.IndexOf(buttonCode) != -1;
         List<List<Vector2>> lists = pathTo(transform.position,end, movement);
         lists.Sort((a, b) => a.Count - b.Count); 
         StartCoroutine(SmoothMovement(lists[0],1));
-        isWaitNext = true;
-        GameManager.instance.checkNextTurn();
+
         return true;
+    }
+
+    public bool OrderMove(Vector2 end, GameItem fightWith) {
+        
+        FightSystem.instance.fight(
+            this,
+            fightWith
+        );
+        if (end.x == x && end.y == y) {
+            
+            callUnitMove(false);
+            NotifyMoveEnd();
+            return false;
+        } else {
+            
+            return  OrderMove(end);
+        } 
+
+
     } 
 
     public List<Vector2> GetNextTo(Vector2 start, List<Completed.BoardManager.Light> lists) {
@@ -128,6 +232,11 @@ return nullButtonCodes.IndexOf(buttonCode) != -1;
         }
         return paths;
     }
+
+    private void NotifyMoveEnd() {
+        // GameManager.instance.NotifyMoveEndMenu(this);
+        FightSystem.instance.NotifyNextFigth();
+    }
  
 
      protected IEnumerator SmoothMovement(List<Vector2> path, int pos)
@@ -147,6 +256,8 @@ return nullButtonCodes.IndexOf(buttonCode) != -1;
         if (pos+1 < path.Count) {
 
              StartCoroutine(SmoothMovement(path,pos +1));
+        } else {
+            NotifyMoveEnd();
         }
     }
 }

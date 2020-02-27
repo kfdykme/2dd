@@ -19,7 +19,7 @@ public class EventSystem : MonoBehaviour
 
             if (isDone) {
 
-                print("event cent :" + (index-1));
+                // print("event cent :" + (index-1));
             }
         }
     }

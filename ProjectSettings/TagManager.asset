@@ -9,6 +9,8 @@ TagManager:
   - Food
   - Soda
   - Light
+  - Floor
+  - UnitFlag
   layers:
   - Default
   - TransparentFX
