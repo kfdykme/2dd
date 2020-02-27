@@ -26,10 +26,13 @@ public class MenuBar : EventableBehaviour
             return false;
         } else {
             if (code == KeyCode.DownArrow) {
-                mCurrentPos = (mCurrentPos+1) % buttons.Length;
+                if (mCurrentPos +1< mButtons.Count)
+                    mCurrentPos++;
                 OnHoverButton(mCurrentPos);
             } else if (code == KeyCode.UpArrow) {
-                mCurrentPos = (mCurrentPos-1) % buttons.Length;
+                if (mCurrentPos > 0)
+                    mCurrentPos--;
+                
                 OnHoverButton(mCurrentPos);
             } else if (code == KeyCode.A) {
                 mButtons[mCurrentPos].GetComponent<MenuButton>().onClick();
@@ -45,6 +48,8 @@ public class MenuBar : EventableBehaviour
     }
     public void notifyMenu(bool status, Vector2 source, GameItem focus) {
         mCurrentPos = 0;
+        
+        OnHoverButton(mCurrentPos);
         print("MenuBar: On notifyMenu");
         Vector2 end = source + new Vector2(1,1); 
         GetComponent<RectTransform>().anchoredPosition = end;
@@ -65,12 +70,15 @@ public class MenuBar : EventableBehaviour
 
     void OnHoverButton(int pos) {
         //1 reset current hovered button
-        hoverButton = mButtons[pos];
+        if (pos <0 || pos >= mButtons.Count)
+        return;
+
         if (hoverButton == null) {hoverButton = mButtons[0]; return;}
-         
+        
         Image hoverButtonImage = hoverButton.GetComponent<Image>();
         hoverButtonImage.color = Color.white;
 
+        hoverButton = mButtons[pos]; 
         hoverButtonImage = hoverButton.GetComponent<Image>();
         Color outColor; 
         ColorUtility.TryParseHtmlString("#00bcd4", out  outColor);
