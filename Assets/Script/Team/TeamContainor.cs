@@ -7,7 +7,7 @@ public class TeamContainor : MonoBehaviour
     public static TeamContainor instance;
 
 
-    public List<Team> teams;
+    public List<Team> teams = new List<Team>();
 
     void Awake()
     {

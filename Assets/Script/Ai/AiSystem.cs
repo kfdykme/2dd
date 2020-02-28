@@ -46,8 +46,9 @@ public class AiSystem : MonoBehaviour
             return;
         }
         if (!actionUnits[0].isDead) {
-            AiUnitAction(actionUnits[0], targetUnits);
+            GameItem actionUnit = actionUnits[0];
             actionUnits.RemoveAt(0);
+            AiUnitAction(actionUnit, targetUnits);
         }
         else {
             
@@ -85,7 +86,9 @@ public class AiSystem : MonoBehaviour
             });
 
             //order move unit
-            unit.OrderMove(targetPosition);
+            print(min); 
+
+            unit.OrderMove(targetPosition); 
         }
     }
 

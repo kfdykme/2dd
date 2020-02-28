@@ -63,6 +63,16 @@ public class CursorP : MovingObject
         }
     }
 
+    public void MoveCursorTo (GameItem gameItem) {
+        print("Move Cursor To" + gameItem.GetPosition());
+        Vector2 dis = gameItem.GetPosition() - new Vector2(transform.position.x,transform.position.y);
+        
+        lastPosition = transform.position;
+        AttemptMove<Wall>((int)dis.x, (int)dis.y);
+        lastFocus = null;
+        
+    }
+
     public override bool OnKeyDownEvent(KeyCode code)
     {
         int horizontal = 0;
@@ -111,11 +121,15 @@ public class CursorP : MovingObject
         GameItem focus;
         if (lastPosition.x != transform.position.x
         || lastPosition.y != transform.position.y
-        || lastFocus == null)
+        || lastFocus == null) {
             focus = GameManager.instance.getByXY((int)Math.Round(rg2d.position.x), (int)Math.Round(rg2d.position.y));
-        else
+            // print("focus change to :" + focus.GetPosition());
+            }
+        else {
             focus = lastFocus;
 
+        }
+            
         lastFocus = focus;
         if (focus == null)
         {
@@ -160,8 +174,8 @@ public class CursorP : MovingObject
     public void callUnitWait()
     {
         moveItem = getFocus();
-        moveItem.isWaitNext = true;
-        GameManager.instance.checkNextTurn();
+        moveItem.Wait();
+        print(moveItem.id + " call wait");
     }
 
     private bool shouldShowMenu()

@@ -78,10 +78,13 @@ public class GameManager : MonoBehaviour
 
     public bool checkNextTurn()
     {
+        print("Check next turn...");
         bool allNext = true;
-        mTeams[mCurrentTeamPos].teamUnits.ForEach(unit =>
+        mTeams[mCurrentTeamPos].initialedUnits.ForEach(unit =>
         {
-            if (unit.isWaitNext == false)
+            
+            print("Unit:" + unit.id + " is wait? " + unit.isWaitNext);
+            if (!unit.isWaitNext && !unit.isDead)
             {
                 allNext = false;
             }

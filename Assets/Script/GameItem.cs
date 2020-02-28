@@ -24,9 +24,12 @@ public class GameItem : MonoBehaviour
     public bool isCanMove = true;
 
 
+    public bool hasAttackedThisTurn = false;
+
     public int movement = 3;
 
     public int moveCoast = 1;
+
 
     private Rigidbody2D rb2D;
     private float inverseMovetime;
@@ -84,12 +87,14 @@ public class GameItem : MonoBehaviour
     public static int ACTION_STATUS_GO = 1;
 
 
-    public int GetActionStatus() {
+    public int GetActionStatus()
+    {
         return ACTION_STATUS_GO;
     }
 
-    public Vector2 GetPosition() {
-        return new Vector2(x,y);
+    public Vector2 GetPosition()
+    {
+        return new Vector2(x, y);
     }
 
     public void Dead()
@@ -97,6 +102,12 @@ public class GameItem : MonoBehaviour
 
         gameObject.SetActive(false);
         isDead = true;
+    }
+
+    public void Wait() {
+        
+        isWaitNext = true;
+        GameManager.instance.checkNextTurn();
     }
 
 
@@ -190,8 +201,9 @@ public class GameItem : MonoBehaviour
         }
 
 
-        if (CheckCanAttack())  {
-            print("GameItem :" + id +   "add menu button :" + MenuButton.CODE_ATTACK);
+        if (CheckCanAttack() && !hasAttackedThisTurn)
+        {
+            print("GameItem :" + id + "add menu button :" + MenuButton.CODE_ATTACK);
             codes.Add(MenuButton.CODE_ATTACK);
         }
 
@@ -205,16 +217,19 @@ public class GameItem : MonoBehaviour
      * @param {type} 
      * @return: 
      */
-    public void WaitToAttack() {
+    public void WaitToAttack()
+    {
         movementSave = movement;
         movement = 0;
     }
 
-    public void RefreshMovement() {
+    public void RefreshMovement()
+    {
         movement = movementSave;
     }
 
-    private bool CheckCanAttack() {
+    private bool CheckCanAttack()
+    {
         return TeamContainor.instance.GetCanAttack(this).Count != 0;
     }
 
@@ -255,17 +270,21 @@ public class GameItem : MonoBehaviour
     {
         print("GameItem from :" + GetPosition() + " OrderMove to :" + end);
         print("Transform.position is:" + transform.position);
+        if (end.x == x&& end.y == y) {
+            NotifyMoveEnd();
+        }
         if (GameManager.instance.hasUnit(end.x, end.y))
-        {
+        { 
             return false;
         }
         Vector3 end3 = new Vector3(end.x, end.y, 0);
 
         List<List<Vector2>> lists = pathTo(GetPosition(), end, movement);
-        
+
         lists.Sort((a, b) => a.Count - b.Count);
-        
-        if (lists.Count == 0) {
+
+        if (lists.Count == 0)
+        {
             print("Paths from " + GetPosition() + " to " + end + "is 0");
             return false;
         }
@@ -337,20 +356,28 @@ public class GameItem : MonoBehaviour
         return paths;
     }
 
-    public void Refresh() {
-        
+    public void Refresh()
+    {
+
         isWaitNext = false;
         isCanMove = true;
+        hasAttackedThisTurn = false;
     }
 
     private void NotifyMoveEnd()
     {
         isCanMove = false;
         FightSystem.instance.NotifyNextFigth();
-        if (!isDead)
-            GameManager.instance.NotifyMoveEndMenu(this);
         if (team.teamFlag.Equals(Team.TEAM_FLAG_C))
+        {
+            Wait();
             AiSystem.instance.NotifyAiAction();
+        }
+        else
+        {
+            if (!isDead)
+                GameManager.instance.NotifyMoveEndMenu(this);
+        }
     }
 
 

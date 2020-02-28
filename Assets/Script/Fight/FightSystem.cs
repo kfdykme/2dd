@@ -48,12 +48,14 @@ public class FightSystem : MonoBehaviour
 
     private void DoFight(GameItem actUnit, GameItem defUnit) {
         
-        actUnit.isWaitNext = true;
+        actUnit.hasAttackedThisTurn = true;
         // attack 
         defUnit.currentHP -= actUnit.attack - defUnit.defance;
         // check is alive
         if (defUnit.currentHP <= 0) {
             GameManager.instance.UnitDie(defUnit);
+             
+            CursorP.instance.MoveCursorTo(actUnit);
             return;
         }
 
@@ -63,6 +65,7 @@ public class FightSystem : MonoBehaviour
             GameManager.instance.UnitDie(actUnit); 
         }
 
+        CursorP.instance.MoveCursorTo(actUnit);
     }
 
     public void fight(GameItem actUnit, GameItem defUnit) {
