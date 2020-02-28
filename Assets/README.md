@@ -1,10 +1,29 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-01-31 01:28:30
+ * @LastEditTime: 2020-02-28 22:41:20
+ * @LastEditors: your name
+ * @Description: In User Settings Edit
+ * @FilePath: \2dd\Assets\README.md
+ -->
 # {{game_name}}
 
 # TODO
-- 移动后菜单
-- 攻击后确认待机
-- ai移动
+- 关卡
+    - 教学关
+        - chapter 1
+            - 移动教学
+            - 简单地形
+            - 移动到目的地则任务完成
+
+    - 攻击
+- 动画
+- 攻击动画
 # DONE
+- ai
+    - 移动
+- 攻击后确认待机
+- 移动后菜单
 - 获取可攻击单位
     - 可攻击单位根据可移动位置决定
 - 单位攻击

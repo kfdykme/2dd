@@ -75,6 +75,16 @@ public class GameItem : MonoBehaviour
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 
+    public static int ACTION_STATUS_GO = 1;
+
+
+    public int GetActionStatus() {
+        return ACTION_STATUS_GO;
+    }
+
+    public Vector2 GetPosition() {
+        return new Vector2(x,y);
+    }
 
     public void Dead()
     {
@@ -172,6 +182,7 @@ public class GameItem : MonoBehaviour
             codes.Add(MenuButton.CODE_WAIT);
         }
 
+
         return codes;
     }
     public bool isOpenButton(int buttonCode)
@@ -209,14 +220,22 @@ public class GameItem : MonoBehaviour
 
     public bool OrderMove(Vector2 end)
     {
+        print("GameItem from :" + GetPosition() + " OrderMove to :" + end);
+        print("Transform.position is:" + transform.position);
         if (GameManager.instance.hasUnit(end.x, end.y))
         {
             return false;
         }
         Vector3 end3 = new Vector3(end.x, end.y, 0);
 
-        List<List<Vector2>> lists = pathTo(transform.position, end, movement);
+        List<List<Vector2>> lists = pathTo(GetPosition(), end, movement);
+        
         lists.Sort((a, b) => a.Count - b.Count);
+        
+        if (lists.Count == 0) {
+            print("Paths from " + GetPosition() + " to " + end + "is 0");
+            return false;
+        }
         StartCoroutine(SmoothMovement(lists[0], 1));
 
         return true;
@@ -297,7 +316,7 @@ public class GameItem : MonoBehaviour
         FightSystem.instance.NotifyNextFigth();
         if (!isDead)
             GameManager.instance.NotifyMoveEndMenu(this);
-        
+        AiSystem.instance.NotifyAiAction();
     }
 
 

@@ -181,6 +181,11 @@ public class GameManager : MonoBehaviour
         }
         roundAnimationManager.playTeam(currentTurn, mTeams[mCurrentTeamPos]);
         print("GameManager: next turn - " + currentTurn);
+
+        if (mTeams[mCurrentTeamPos].teamFlag.Equals(Team.TEAM_FLAG_C)) {
+            AiSystem.instance.AiTurn(mTeams[mCurrentTeamPos]);
+
+        }
     }
 
     public void AddUnitTeam(Team team)
@@ -240,6 +245,8 @@ public class GameManager : MonoBehaviour
     {
         playerUnits.Add(script);
     }
+
+    
     public bool checkCursorMove(Vector2 start, int xDir, int yDir)
     {
 
@@ -247,15 +254,25 @@ public class GameManager : MonoBehaviour
         return boardScript.getBlueLightActive(end) || hasUnit(end.x, end.y);
     }
 
-    public List<BoardManager.Light> callUnitMove(GameItem item, bool status)
+    
+    /**
+     * @description:  返回可达的Light 
+     * @param {GameItem} 
+     * @return: 
+     */
+    public List<BoardManager.Light> GetLightsCanGo(GameItem item) {
+        
+        return boardScript.getLightsCanGo(item.GetPosition(), item.movement, new List<BoardManager.Light>());
+    }
+
+    public List<BoardManager.Light>    callUnitMove(GameItem item, bool status)
     {
         isMoveing = status;
-        Rigidbody2D rg2D = item.GetComponent<Rigidbody2D>();
-        List<BoardManager.Light> lights = boardScript.getLightsCanGo(rg2D, item.movement, new List<BoardManager.Light>());
+        List<BoardManager.Light> lights = GetLightsCanGo(item);
         List<BoardManager.Light> results = new List<BoardManager.Light>();
         if (!status)
-        {
-            lights = boardScript.lights;
+        {  
+            lights = boardScript.lights;    
         }
 
         List<BoardManager.Light> others = new List<BoardManager.Light>();

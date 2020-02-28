@@ -104,6 +104,7 @@ namespace Completed
 
         public List<Light> getLightsNextTo(Light light) {
             List<Light> ls = new List<Light>();
+            print(light.position);
             lights.ForEach(i => {
                 if ((i.position - light.position).sqrMagnitude < 1.5
                 && i.position != light.position)
@@ -116,10 +117,10 @@ namespace Completed
             return GameManager.instance.getByXY(x,y).moveCoast;
         }
 
-        public List<Light> getLightsCanGo(Rigidbody2D source, int movement, List<Light> result) {
+        public List<Light> getLightsCanGo(Vector2 source, int movement, List<Light> result) {
 
             List<Light> tlights = new List<Light>();
-            Light s = getLightByXY((int)source.position.x,(int) source.position.y);
+            Light s = getLightByXY((int)source.x,(int) source.y);
             if (result.Find(p => {return p.position == s.position;}) == null) {
              tlights.Add(s);
             }
@@ -129,7 +130,7 @@ namespace Completed
                     if (!GameManager.instance.hasUnit(l.position.x, l.position.y)
                     && movement- GameManager.instance.getMovementCost(l.position.x, l.position.y)>-1) {
 
-                        getLightsCanGo(l.Object.GetComponent<Rigidbody2D>(), movement- getMovementCoast((int)l.position.x, (int)l.position.y), tlights)
+                        getLightsCanGo(l.Object.GetComponent<Rigidbody2D>().position, movement- getMovementCoast((int)l.position.x, (int)l.position.y), tlights)
                         .ForEach( nl => {
                             if (tlights.FindIndex(p => p.position == nl.position) == -1) 
                                 tlights.Add(nl);
@@ -162,6 +163,9 @@ namespace Completed
                     target = i;
                 }
             });
+            if (target == null) {
+                throw new Exception("GetLightByXY from : " + x + "," + y + " is null");
+            }
             return target;
         }
 
@@ -258,13 +262,17 @@ namespace Completed
         }
 
         void layoutObjectAtTeam(Team team) {
-            Transform teamHolder = new GameObject(team.teamName).transform;
+            Transform teamHolder = new GameObject(team.teamName).transform; 
             team.teamUnits.ForEach(i => {
                 Vector3 position = new Vector3(i.x, i.y, 0f);
                 GameObject instance = Instantiate(i.gameObject, position, Quaternion.identity);
-                instance.GetComponent<GameItem>().teamColor = team.mTeamColor;
+                GameItem gameItem = instance.GetComponent<GameItem>();
+                gameItem.teamColor = team.mTeamColor;
                 instance.transform.SetParent(teamHolder);
+                team.initialedUnits.Add(gameItem);
             });
+
+            TeamContainor.instance.AddTeam(team);
         }
 
         public void SetupScene(int level)
