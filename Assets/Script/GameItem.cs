@@ -370,8 +370,15 @@ public class GameItem : MonoBehaviour
         FightSystem.instance.NotifyNextFigth();
         if (team.teamFlag.Equals(Team.TEAM_FLAG_C))
         {
-            Wait();
-            AiSystem.instance.NotifyAiAction();
+            if (CheckCanAttack() && !hasAttackedThisTurn) {
+                GameItem target = TeamContainor.instance.GetCanAttack(this)[0];
+                FightSystem.instance.fight(this, target);
+                FightSystem.instance.NotifyNextFigth();
+            } else {
+                
+                Wait();
+                AiSystem.instance.NotifyAiAction();
+            }
         }
         else
         {

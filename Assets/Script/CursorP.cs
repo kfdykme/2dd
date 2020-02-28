@@ -126,8 +126,7 @@ public class CursorP : MovingObject
             // print("focus change to :" + focus.GetPosition());
             }
         else {
-            focus = lastFocus;
-
+            focus = lastFocus; 
         }
             
         lastFocus = focus;

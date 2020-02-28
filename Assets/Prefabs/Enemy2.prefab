@@ -187,6 +187,9 @@ MonoBehaviour:
   gameItemName: unit
   isWaitToMove: 0
   isWaitNext: 0
+  isDead: 0
+  isCanMove: 1
+  hasAttackedThisTurn: 0
   movement: 3
   moveCoast: 2
   moveTime: 0.1
@@ -194,14 +197,16 @@ MonoBehaviour:
   y: 5
   id: unit_2
   teamColor: {r: 0, g: 0, b: 0, a: 0}
-  HP: 1
-  currentHP: 1
+  HP: 10
+  currentHP: 10
   attack: 1
   mona: 0
   defance: 0
   monadef: 0
   c: 0
   d: 0
+  range: 1
+  team: {fileID: 0}
 --- !u!1001 &3679018868592592254
 PrefabInstance:
   m_ObjectHideFlags: 0

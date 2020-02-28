@@ -55,17 +55,22 @@ public class FightSystem : MonoBehaviour
         if (defUnit.currentHP <= 0) {
             GameManager.instance.UnitDie(defUnit);
              
-            CursorP.instance.MoveCursorTo(actUnit);
-            return;
+        } else {
+            actUnit.currentHP -= defUnit.attack - actUnit.defance;
+                
+                if (actUnit.currentHP <= 0) {
+                    GameManager.instance.UnitDie(actUnit); 
+                }
+
         }
 
-        actUnit.currentHP -= defUnit.attack - actUnit.defance;
-        
-        if (actUnit.currentHP <= 0) {
-            GameManager.instance.UnitDie(actUnit); 
-        }
-
+       
         CursorP.instance.MoveCursorTo(actUnit);
+        if (actUnit.team.teamFlag.Equals(Team.TEAM_FLAG_C)) {
+            
+            actUnit.Wait();
+            AiSystem.instance.NotifyAiAction();
+        }
     }
 
     public void fight(GameItem actUnit, GameItem defUnit) {
