@@ -47,6 +47,8 @@ public class FightSystem : MonoBehaviour
     }
 
     private void DoFight(GameItem actUnit, GameItem defUnit) {
+        
+        actUnit.isWaitNext = true;
         // attack 
         defUnit.currentHP -= actUnit.attack - defUnit.defance;
         // check is alive
@@ -60,6 +62,7 @@ public class FightSystem : MonoBehaviour
         if (actUnit.currentHP <= 0) {
             GameManager.instance.UnitDie(actUnit); 
         }
+
     }
 
     public void fight(GameItem actUnit, GameItem defUnit) {

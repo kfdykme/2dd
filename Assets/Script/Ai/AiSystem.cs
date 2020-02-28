@@ -31,24 +31,12 @@ public class AiSystem : MonoBehaviour
     }
 
     public void AiTurn(Team team) { 
-        List<Team> otherTeams = new List<Team>();
+        print("AiTurn GO!!! by " + team.teamName);
+        targetUnits = TeamContainor.instance.GetOtherTeamUnits(team);
+        
+        actionUnits = new List<GameItem>();
 
-        teams.ForEach(t => {
-            if (!t.teamName.Equals(team.teamName)) {
-                otherTeams.Add(t);
-            }
-        });
-
-        List<GameItem> otherUnits = new List<GameItem>();
-        otherTeams.ForEach(ot => {
-            ot.initialedUnits.ForEach(tu => {
-                otherUnits.Add(tu);
-            });
-        });
-
-        targetUnits = otherUnits;
-
-        actionUnits = team.initialedUnits;
+        actionUnits.AddRange(team.initialedUnits);
  
         NotifyAiAction();
     }
@@ -57,8 +45,15 @@ public class AiSystem : MonoBehaviour
         if (actionUnits.Count == 0 ) {
             return;
         }
-         AiUnitAction(actionUnits[0], targetUnits);
-         actionUnits.RemoveAt(0);
+        if (!actionUnits[0].isDead) {
+            AiUnitAction(actionUnits[0], targetUnits);
+            actionUnits.RemoveAt(0);
+        }
+        else {
+            
+            actionUnits.RemoveAt(0);
+            NotifyAiAction();
+        }
     }
 
     

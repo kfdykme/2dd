@@ -90,10 +90,11 @@ public class MenuBar : EventableBehaviour
         List<MenuButton> menuButtons = new List<MenuButton>();
         for (int x = 0; x < buttons.Length; x++) { 
             MenuButton mb = buttons[x].GetComponent<MenuButton>();
-             
+            
             if (focus != null) {  
                 if (focus.isOpenButton(mb.buttonCode)) { 
                     menuButtons.Add(mb);
+                    print("MenuBar add button :" + mb.buttonName + "/" + mb.buttonCode);
                 }
             } else {
                 if (GameItem.isOpenNullButton(mb.buttonCode)) {
@@ -101,7 +102,7 @@ public class MenuBar : EventableBehaviour
                 }
             }
         }    
-    return menuButtons;
+        return menuButtons;
     }
 
     void MenuSetup(GameItem focus)

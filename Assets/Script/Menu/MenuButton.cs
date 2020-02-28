@@ -10,6 +10,7 @@ public class MenuButton : MonoBehaviour
     // Start is called before the first frame update
     public static int CODE_MOVE = 0;
     public static int CODE_WAIT = 1;
+    public static int CODE_ATTACK = 2;
 
     public static int CODE_NEXT_TURN = 9;
     public void  onClick() {
@@ -18,7 +19,9 @@ public class MenuButton : MonoBehaviour
         } else if (buttonCode == CODE_WAIT) {
             CursorP.instance.callUnitWait();
         } else if (buttonCode == CODE_NEXT_TURN) {
-            GameManager.instance.nextTurn();
+            GameManager.instance.nextTurn(); 
+        } else if (buttonCode == CODE_ATTACK) {
+            CursorP.instance.CallUnitAttack();
         }
     }
     void Start()

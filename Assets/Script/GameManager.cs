@@ -180,11 +180,11 @@ public class GameManager : MonoBehaviour
             currentTurn++;
         }
         roundAnimationManager.playTeam(currentTurn, mTeams[mCurrentTeamPos]);
-        print("GameManager: next turn - " + currentTurn);
+        print("GameManager: " + mTeams[mCurrentTeamPos].teamName + "'s turn : " + currentTurn);
 
         if (mTeams[mCurrentTeamPos].teamFlag.Equals(Team.TEAM_FLAG_C)) {
+            print("This is a compute turn");
             AiSystem.instance.AiTurn(mTeams[mCurrentTeamPos]);
-
         }
     }
 

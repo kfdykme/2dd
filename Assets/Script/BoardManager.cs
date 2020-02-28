@@ -270,6 +270,8 @@ namespace Completed
                 gameItem.teamColor = team.mTeamColor;
                 instance.transform.SetParent(teamHolder);
                 team.initialedUnits.Add(gameItem);
+                print("Add " + gameItem.id + " to " + team.teamName);
+                gameItem.team = team;
             });
 
             TeamContainor.instance.AddTeam(team);

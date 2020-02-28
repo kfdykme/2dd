@@ -65,6 +65,12 @@ public class GameItem : MonoBehaviour
 
     public int d;
 
+    // 攻击射程 
+    public int range = 1;
+
+    // 所属队伍
+    public Team team;
+
     public class GameItemException : System.Exception
     {
         public GameItemException() { }
@@ -171,6 +177,7 @@ public class GameItem : MonoBehaviour
     private List<int> GetUnitButtonCodes()
     {
         List<int> codes = new List<int>();
+        print("GetUnitButtonCodes from " + id);
         if (isDead) return codes;
         if (isCanMove)
         {
@@ -183,8 +190,34 @@ public class GameItem : MonoBehaviour
         }
 
 
+        if (CheckCanAttack())  {
+            print("GameItem :" + id +   "add menu button :" + MenuButton.CODE_ATTACK);
+            codes.Add(MenuButton.CODE_ATTACK);
+        }
+
         return codes;
     }
+
+
+    private int movementSave = 0;
+    /**
+     * @description: 将移动能力暂时变为零
+     * @param {type} 
+     * @return: 
+     */
+    public void WaitToAttack() {
+        movementSave = movement;
+        movement = 0;
+    }
+
+    public void RefreshMovement() {
+        movement = movementSave;
+    }
+
+    private bool CheckCanAttack() {
+        return TeamContainor.instance.GetCanAttack(this).Count != 0;
+    }
+
     public bool isOpenButton(int buttonCode)
     {
         if (gameItemName.Equals(TYPE_UNIT))
@@ -316,7 +349,8 @@ public class GameItem : MonoBehaviour
         FightSystem.instance.NotifyNextFigth();
         if (!isDead)
             GameManager.instance.NotifyMoveEndMenu(this);
-        AiSystem.instance.NotifyAiAction();
+        if (team.teamFlag.Equals(Team.TEAM_FLAG_C))
+            AiSystem.instance.NotifyAiAction();
     }
 
 
